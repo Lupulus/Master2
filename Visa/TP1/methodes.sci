@@ -34,8 +34,15 @@ endfunction
 /// \return matrice 3*3 des parametres intrinseques.
 // -----------------------------------------------------------------------
 function A = IntrinsicMatrix(b)
-  // A modifier!
-  A = rand(3, 3);
+  Vo = ( b(2)*b(4) - b(1)*b(5) ) / (b(1)*b(3) -b(2)*b(2));
+  lambda = b(6) - ( b(4)*b(4) + Vo*(b(2)*b(4) - b(1)*b(5)) ) / b(1);
+  alpha = sqrt(lambda / b(1));
+  beta = sqrt(lambda*b(1) / (b(1)*b(3) - b(2)*b(2) ) );
+  gamma = - b(2)*alpha*alpha*beta / lambda;
+  Uo = gamma*Vo/beta - b(4)*alpha*alpha/lambda;
+  A = [alpha, gamma, Uo;
+        0,    beta,  Vo;
+        0,      0,    1];
 endfunction
 
 // -----------------------------------------------------------------------
@@ -46,7 +53,15 @@ endfunction
 /// \return matrice 3*4 des parametres extrinseques.
 // -----------------------------------------------------------------------
 function E = ExtrinsicMatrix(iA, H)
-  // A modifier!
-  E = rand(3, 4);
+    h1 = H(:,1);
+    lambda = 1 / norm((iA * h1));
+
+    r1 = lambda * iA * h1;
+    r2 = lambda * iA * H(:,2);
+    r3 = cross(r1, r2);
+    t  = lambda * iA * H(:,3);
+
+    E = [r1, r2, r3, t];
+
 endfunction
 
