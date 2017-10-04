@@ -81,6 +81,7 @@ Mat iviFundamentalMatrix(const Mat& mLeftIntrinsic,
                          const Mat& mRightExtrinsic) {
     // A modifier !
     // Doit utiliser la fonction iviVectorProductMatrix
+    Mat mFundamental = Mat::eye(3, 3, CV_64F);
     
     //création de la matrice de passage 3d
     Mat ddd = (Mat_<double>(3,4) <<
@@ -94,7 +95,7 @@ Mat iviFundamentalMatrix(const Mat& mLeftIntrinsic,
     Mat p1 = mLeftIntrinsic * ddd * mLeftExtrinsic;
     Mat p2 = mRightIntrinsic * ddd * mRightExtrinsic;
 
-    Mat mFundamental = iviVectorProductMatrix(p2*o1)*p2*p1.inv();
+    mFundamental = iviVectorProductMatrix(p2*o1)*p2*p1.inv();
     // Retour de la matrice fondamentale
     return mFundamental;
 }
