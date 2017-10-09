@@ -1,4 +1,4 @@
-/* --------------------------------------------------------------------------
+    /* --------------------------------------------------------------------------
 Mise en correspondance de points d'interet detectes dans deux images
 Copyright (C) 2010, 2011  Universite Lille 1
 
@@ -26,7 +26,9 @@ Inclure les fichiers d'entete
 using namespace cv;
 #include "glue.hpp"
 #include "prenom-nom.hpp"
+#include "iostream"
 
+using namespace std;
 // -----------------------------------------------------------------------
 /// \brief Detecte les coins.
 ///
@@ -37,12 +39,15 @@ using namespace cv;
 Mat iviDetectCorners(const Mat& mImage,
                      int iMaxCorners) {
     // A modifier !
-    double tx = mImage.cols, ty = mImage.rows;
-    Mat mCorners = (Mat_<double>(3,4) <<
-        .25 * tx, .75 * tx, .25 * tx, .75 * tx,
-        .25 * ty, .25 * ty, .75 * ty, .75 * ty,
-        1., 1., 1., 1.
-        );
+    vector<Point2f> vCorners;
+    goodFeaturesToTrack(mImage,vCorners,iMaxCorners,0.01,10);
+    Mat mCorners(3,vCorners.size(),CV_64F);
+    for(int i=0;i<vCorners.size();i++){
+        mCorners.at<double>(0,i)=(double)vCorners[i].x;
+        mCorners.at<double>(1,i)=(double)vCorners[i].y;
+        mCorners.at<double>(2,i)=1;
+    }
+
     // Retour de la matrice
     return mCorners;
 }
@@ -53,15 +58,11 @@ Mat iviDetectCorners(const Mat& mImage,
 /// @param v: vecteur colonne (3 coordonnees)
 /// @return matrice de produit vectoriel
 // -----------------------------------------------------------------------
-Mat iviVectorProductMatrix(const Mat& v) {
-    // A modifier !
-    
+Mat iviVectorProductMatrix(const Mat& tmp) {
     Mat mVectorProduct = (Mat_<double>(3,3) <<
-    0., - v.at<double>(2), v.at<double>(1),
-    v.at<double>(2), 0., - v.at<double>(0),
-    - v.at<double>(2), v.at<double>(0), 0.
-    );    
-    
+        0.0, -tmp.at<double>(2), tmp.at<double>(1),
+        tmp.at<double>(2), 0.0, -tmp.at<double>(0),
+        -tmp.at<double>(1), tmp.at<double>(0), 0.0);
     // Retour de la matrice
     return mVectorProduct;
 }
@@ -75,28 +76,12 @@ Mat iviVectorProductMatrix(const Mat& v) {
 /// @param mRightExtrinsic: matrice extrinseque de la camera droite
 /// @return matrice fondamentale
 // -----------------------------------------------------------------------
-Mat iviFundamentalMatrix(const Mat& mLeftIntrinsic,
-                         const Mat& mLeftExtrinsic,
-                         const Mat& mRightIntrinsic,
-                         const Mat& mRightExtrinsic) {
-    // A modifier !
+Mat iviFundamentalMatrix(const Mat& mLeftIntrinsic,const Mat& mLeftExtrinsic,const Mat& mRightIntrinsic,const Mat& mRightExtrinsic) {
     // Doit utiliser la fonction iviVectorProductMatrix
-    Mat mFundamental = Mat::eye(3, 3, CV_64F);
-    
-    //création de la matrice de passage 3d
-    Mat ddd = (Mat_<double>(3,4) <<
-        1.,0.,0.,0.,
-        0.,1.,0.,0.,
-        0.,0.,1.,0.
-    );
-    
+    Mat p1 = mLeftIntrinsic * Mat::eye(3, 4, CV_64F) * mLeftExtrinsic;
+    Mat p2 = mRightIntrinsic * Mat::eye(3, 4, CV_64F) * mRightExtrinsic;
     Mat o1 = mLeftExtrinsic.inv().col(3);
-    //création des matrices des points p1 et p2
-    Mat p1 = mLeftIntrinsic * ddd * mLeftExtrinsic;
-    Mat p2 = mRightIntrinsic * ddd * mRightExtrinsic;
-
-    mFundamental = iviVectorProductMatrix(p2*o1)*p2*p1.inv();
-    // Retour de la matrice fondamentale
+    Mat mFundamental = iviVectorProductMatrix(p2*o1) * p2 * p1.inv(DECOMP_SVD);
     return mFundamental;
 }
 
@@ -112,8 +97,25 @@ Mat iviFundamentalMatrix(const Mat& mLeftIntrinsic,
 Mat iviDistancesMatrix(const Mat& m2DLeftCorners,
                        const Mat& m2DRightCorners,
                        const Mat& mFundamental) {
+
+    int widthLeft = m2DLeftCorners.size().width;
+    int widthRight = m2DRightCorners.size().width;
+    Mat mDistances(widthLeft, widthRight,CV_64F);
+
+    for(int i=0;i<widthLeft;i++){
+        Mat pL = m2DLeftCorners.col(i);
+        Mat epipolaireL = mFundamental * pL;
+        for(int j = 0; j < widthRight; j++) {
+            Mat pR = m2DRightCorners.col(j);
+            Mat epipolaireR = mFundamental.t() * pR;
+            mDistances.at<double>(i,j) = ((abs(epipolaireL.at<double>(0) * pR.at<double>(0) + epipolaireL.at<double>(1) * pR.at<double>(1) + epipolaireL.at<double>(2)))
+                                          /(sqrt(pow(epipolaireL.at<double>(0),2) + pow(epipolaireL.at<double>(1),2)))) +
+
+                                        ((abs(epipolaireR.at<double>(0)*pL.at<double>(0)+epipolaireR.at<double>(1)*pL.at<double>(1)+epipolaireR.at<double>(2)))
+                                        /(sqrt(pow(epipolaireR.at<double>(0),2) + pow(epipolaireR.at<double>(1),2))));
+        }
+    }
     // A modifier !
-    Mat mDistances = Mat();
     // Retour de la matrice fondamentale
     return mDistances;
 }
@@ -121,7 +123,7 @@ Mat iviDistancesMatrix(const Mat& m2DLeftCorners,
 // -----------------------------------------------------------------------
 /// \brief Initialise et calcule les indices des points homologues.
 ///
-/// @param mDistances: matrice des distances
+/// 0@param mDistances: matrice des distances
 /// @param fMaxDistance: distance maximale autorisant une association
 /// @param mRightHomologous: liste des correspondants des points gauche
 /// @param mLeftHomologous: liste des correspondants des points droite
@@ -131,5 +133,63 @@ void iviMarkAssociations(const Mat& mDistances,
                          double dMaxDistance,
                          Mat& mRightHomologous,
                          Mat& mLeftHomologous) {
-    // A modifier !
+
+    int width =mDistances.size().width, height =mDistances.size().height;
+
+    int match = 0, notFound = 0;
+    mRightHomologous = Mat::eye(width, 1, CV_64F);
+    mLeftHomologous = Mat::eye(height, 1, CV_64F);
+
+    for(int i= 0; i< width ; i++) {
+        int min = dMaxDistance;
+        int minIndex = -1;
+        for(iiviMarknt j= 0; j< height; j++) {
+            if(min>mDistances.at<double>(i,j) && mDistances.at<double>(i,j)<dMaxDistance) {
+                min = mDistances.at<double>(i,j);
+                minIndex = j;
+            }
+        }
+        mRightHomologous.at<double>(i,0) = minIndex;
+    }
+
+    for(int i= 0; i< height ; i++) {
+        int min = dMaxDistance;
+        int miviMarkinIndex = -1;
+        for(int j= 0; j< width; j++) {
+            if(min>mDistances.at<double>(j,i) && mDistances.at<double>(j,i)<dMaxDistance) {
+                min = mDistances.at<double>(j,i);
+                minIndex = j;
+            }
+        }
+        mLeftHomologous.at<double>(i,0) = minIndex;
+    }
+
+    cout << endl <<"Right matrix " << endl;
+    for(int i = 0; i<mRightHomologous.size().height; i++) {
+        if(mLeftHomologous.at<double>(mRightHomologous.at<double>(i,0),0)==i)
+            match++;
+        else if(mRightHomologous.at<double>(i,0)==-1)
+            notFound++;
+        cout << i << ": " << mRightHomologous.at<double>(i,0);
+        cout << endl;
+    }
+    cout << "Match: " << match << endl;
+    cout << "Not found: " << notFound << endl;
+    cout << "iviMarkError: " << mRightHomologous.size().height-(match+notFound) << endl;
+
+    match = 0;
+    notFound = 0;
+    cout << "Left matrix " << endl;
+    for(int i = 0; i<mLeftHomologous.size().height; i++) {
+        if(mRightHomologous.at<double>(mLeftHomologous.at<double>(i,0),0)==i)
+            match++;
+        else if (mLeftHomologous.at<double>(i,0)==-1)
+            notFound++;
+        cout << i << ": " << mLeftHomologous.at<double>(i,0);
+        cout << endl;
+    }
+    cout << "iviMarkMaxDistance: " << dMaxDistance << endl;
+    cout << "Match: " << match << endl;
+    cout << "Not found: " << notFound << endl;
+    cout << "Error: " << mLeftHomologous.size().height-(match+notFound) << endl;
 }
