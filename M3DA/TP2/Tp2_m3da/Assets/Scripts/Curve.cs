@@ -62,19 +62,19 @@ public class Curve : MonoBehaviour {
 		Add (new Vector3 (0.6f, 0.5f, 0), 1.0f);
 	}
 
-    public void SetCircle()
-    {
-        Clear();
-        Add(new Vector3(0.0f, -0.5f, 0.0f), 1.0f); // p0
-        Add(new Vector3(-0.5f, -0.5f, 0.0f), Mathf.Cos(1.0472f)); // p1
-        Add(new Vector3(-0.25f, 0.0f, 0.0f), 1.0f); // p2
-        Add(new Vector3(0.0f, 0.5f, 0.0f), Mathf.Cos(1.0472f)); // p3
-        Add(new Vector3(0.25f, 0.0f, 0.0f), 1.0f); // p4
-        Add(new Vector3(0.5f, -0.5f, 0.0f), Mathf.Cos(1.0472f)); // p5
-        Add(new Vector3(0.0f, -0.5f, 0.0f), 1.0f); // p6
+	public void SetCircle()
+	{
+		Clear();
+		Add(new Vector3(0.0f, -0.5f, 0.0f), 1.0f); // p0
+		Add(new Vector3(-0.5f, -0.5f, 0.0f), Mathf.Cos(1.0472f)); // p1
+		Add(new Vector3(-0.25f, 0.0f, 0.0f), 1.0f); // p2
+		Add(new Vector3(0.0f, 0.5f, 0.0f), Mathf.Cos(1.0472f)); // p3
+		Add(new Vector3(0.25f, 0.0f, 0.0f), 1.0f); // p4
+		Add(new Vector3(0.5f, -0.5f, 0.0f), Mathf.Cos(1.0472f)); // p5
+		Add(new Vector3(0.0f, -0.5f, 0.0f), 1.0f); // p6
 
-        basis.degree = 2;
-    }
+		basis.degree = 2;
+	  }
 
 	Vector3 PointCurve(double u) {
 		Vector4 result = Vector4.zero;
@@ -92,15 +92,15 @@ public class Curve : MonoBehaviour {
 
 	public List<Vector3> DrawNurbs() {
 		List<Vector3> l=new List<Vector3>();
-        int nbPoints = basis.nbPoint;
+        	int nbPoints = basis.nbPoint;
 
-        for (double t = StartInterval(); t <=  EndInterval(); t += 1.0/(nbPoints-1))
-        {
-            l.Add(PointCurve(t));
-        }
-        // TODO : set the values of the points of l 
-
-        return l;
+        	for (double t = StartInterval(); t <=  EndInterval(); t += 1.0/(nbPoints-1))
+        	{
+            	l.Add(PointCurve(t));
+        	}
+        	// TODO : set the values of the points of l 
+	
+        	return l;
 	}
 
 	// Update is called once per frame

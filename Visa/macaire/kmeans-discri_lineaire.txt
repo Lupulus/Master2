@@ -5,21 +5,65 @@ open("images_2016/cas_3_dalton15.bmp");
 
 run("k-means Clustering ...", "number_of_clusters=4 cluster_center_tolerance=0.00010000 enable_randomization_seed randomization_seed=48 show_clusters_as_centroid_value");
 
+setBatchMode(true);
+
 image_cluster = getImageID();
 W = getWidth();
 H = getHeight();
 selectImage(image_cluster);
+clusters = newArray(0,0,0,0) ;
+n_clusters = 0
 
-for(i=0; i<3; i++){
-	
-}
+for (j = 0; j < H; j++) {
+	for (i = 0; i < W; i++) {
+		p = getPixel(i, j);
+		isCluster = false;
 
-for (j=0; j<H; j++) {
-	for (i=0; i<W; i++) {
-		
+		for(k = 0; k < 4; k++){
+			if(clusters[k] == p)
+				isCluster = true;
+		}
+
+		if(n_clusters < 4 && !isCluster){
+			clusters[n_clusters] = p;
+			n_clusters ++;
+		}
 	}
 }
 
+open();
+
+segmenter = getImageID();
+value = 0;
+selectImage (segmenter);
+
+for(j = 0; j < H; j++){
+	for(i = 0; i < W; i++){
+		p = getPixel(i,j);
+		min = 1000000000;
+		Rp = (p & 0xff0000) >> 16;
+		Gp = (p & 0x00ff00) >> 8;
+		Bp = (p & 0x0000ff) ;
+		for(k = 0; k < 4; k++){
+			Rk = (k & 0xff0000) >> 16;
+			Gk = (k & 0x00ff00) >> 8;
+			Bk = (k & 0x0000ff) ;
+			Rs = pow(Rp - Rk, 2);
+			Gs = pow(Gp - Gk, 2);
+			Bs = pow(Bp - Bk, 2);
+			if( (((Rs & 0xff ) << 16) + ((Gs & 0xff) << 8) + Bs & 0xff) < min){
+				Rn = Rk;
+				Gn = Gk;
+				Bn = Bk;
+				min = ((Rs & 0xff ) << 16) + ((Gs & 0xff) << 8) + Bs & 0xff; 
+			}
+		}
+		nouvelle_couleur = ((Rn & 0xff ) << 16) + ((Gn & 0xff) << 8) + Bn & 0xff;
+		setPixel(i, j, nouvelle_couleur); 
+	} 
+} 
+
+setBatchMode(false);
 //run("Color Space Converter", "from=RGB to=HSB white=D65");
 
 
