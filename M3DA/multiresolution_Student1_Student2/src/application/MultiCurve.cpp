@@ -124,7 +124,9 @@ void MultiCurve::synthesisStep() {
    */
   finer.resize(n*2); // finer will contain next level
 
-
+  for(int i = 0; i < n/2; i++){
+  	  finer[i] = 
+  }
 
   /* end TODO
    */
@@ -140,19 +142,18 @@ void MultiCurve::analysisStep() {
   int level=log2(n)-1;
   vector<Vector3> coarse;
   coarse.resize(n/2); // coarse will contain the previous level
-
-
-  /* TODO : set the vector coarse and _detail[level] to represent the level curve from level+1
+    /* TODO : set the vector coarse and _detail[level] to represent the level curve from level+1
    * use _currentCurve (contains the points of the current level+1)
+<<<<<<< HEAD
    */
   for(int i = 0; i < n/2; i++){
 
   }
 
-    for(int j = 0; j< n/2; j++){
-        coarse[j] = -_currentCurve[2*j] + 3*_currentCurve[(2*j+1) % n] + 3*_currentCurve[(2*j+2) % n] - _currentCurve[(2*j+3) % n];
-        coarse[j] *= 1/4;
-    }
+  for (int i = 0; i < n/2; i++) {
+        coarse[i] = 1/4 * (-1 * _currentCurve[(2*i) % n] + 3 * _currentCurve[(2*i+1) % n] + 3 * _currentCurve[(2*i+2) % n] - 1 * _currentCurve[(2*i+3) % n]);	
+        _detail[level][i] =1/4 * (1 * _currentCurve[(2*i) % n] - 3 * _currentCurve[(2*i+1) % n] + 3 * _currentCurve[(2*i+2) % n] - 1 * _currentCurve[(2*i+3) % n]);
+  }
 
     std::transform( coarse.begin()+1, coarse.end(),
                     _currentCurve.begin()+1, _currentCurve.begin(),  // assumes v1,v2 of same size > 1,
