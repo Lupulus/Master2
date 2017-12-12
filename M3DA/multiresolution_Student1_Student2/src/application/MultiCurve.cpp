@@ -145,8 +145,19 @@ void MultiCurve::analysisStep() {
   /* TODO : set the vector coarse and _detail[level] to represent the level curve from level+1
    * use _currentCurve (contains the points of the current level+1)
    */
+  for(int i = 0; i < n/2; i++){
 
+  }
 
+    for(int j = 0; j< n/2; j++){
+        coarse[j] = -_currentCurve[2*j] + 3*_currentCurve[(2*j+1) % n] + 3*_currentCurve[(2*j+2) % n] - _currentCurve[(2*j+3) % n];
+        coarse[j] *= 1/4;
+    }
+
+    std::transform( coarse.begin()+1, coarse.end(),
+                    _currentCurve.begin()+1, _currentCurve.begin(),  // assumes v1,v2 of same size > 1,
+                                              //       v one element smaller
+                    std::multiplies<int>() );
 
   /* end TODO
    */
