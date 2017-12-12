@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="JADE-all-4.5.0/jade (3)/src"/>
+	<classpathentry kind="lib" path="JADE-all-4.5.0/jade (3)/demo/CalendarBean.jar"/>
+	<classpathentry kind="lib" path="JADE-all-4.5.0/jade (3)/demo/MeetingScheduler.jar"/>
+	<classpathentry kind="lib" path="JADE-all-4.5.0/jade (3)/lib/jadeExamples.jar"/>
+	<classpathentry kind="lib" path="JADE-all-4.5.0/jade/lib/jade.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
