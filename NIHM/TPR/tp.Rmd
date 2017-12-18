@@ -1,0 +1,50 @@
+---
+title: "tp"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library("gplots")
+```
+
+```{r readdata}
+data = read.table("data.txt", header=TRUE, sep=",")
+participant2SurfPad=subset(data,Participant==2 & Technique=="SurfPad")
+mean(participant2SurfPad[,"Time"])
+techniques=unique(data$Technique)
+participants = unique(data$Participant)
+```
+
+```{r percentile} 
+  v = c(12, .4, 5, 2, 50, 8, 3, 1, 4, .25, 12, .4, 5, 2, 50, 8, 3, 1, 4, .25)
+  x <- quantile(v,  probs = c(0.1, 0.5, 1, 2, 5, 10, 50, 75, NA)/100)
+  boxplot(x)
+  barplot(x)
+```
+
+```{r noError}
+ noErr <- subset(data, Err == 0)
+ print(noErr)
+```
+
+```{r tempsMoyenToutesConditions}
+  tempParticipants = c(1:length(techniques));
+  for(t in 1:length(techniques)){
+    technique <- techniques[t]
+    for(p in 1:length(participants)){
+      participant2SurfPad=subset(data,Participant == p & Technique == technique)
+      tmp <- mean(participant2SurfPad[,"Time"])
+      tempParticipants[t] = tempParticipants[t] + tmp
+    }
+    tempParticipants[t] = tempParticipants[t] / length(participants)
+  }
+  barplot2(tempParticipants)
+```
+
+
+
+```{r}
+  ci(noErr, confidence=0.95)
+```

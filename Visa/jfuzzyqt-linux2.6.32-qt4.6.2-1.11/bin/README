@@ -1,8 +1,0 @@
-To run test cases you need execute following comands:
-
-    export LD_LIBRARY_PATH=`pwd`
-
-and execute test case, for example
-
-    ./cacldialog
-

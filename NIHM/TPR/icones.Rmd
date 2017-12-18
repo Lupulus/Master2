@@ -1,0 +1,160 @@
+---
+title: "Icones"
+author: "GÃ©ry Casiez"
+date: "2017"
+output: html_document
+---
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Chargement des donnÃ©es
+
+```{r readdata}
+data = read.table("icones.csv", header=TRUE, sep=",")
+```
+
+```{r showdata, echo = FALSE, results = 'asis'}
+library(knitr)
+kable(data)
+```
+
+# Moyenne et Ã©cart-type
+
+```{r moy}
+mean(data[,"naturel"])
+mean(data[,"abstrait"])
+```
+
+```{r sd}
+sd(data[,"naturel"])
+sd(data[,"abstrait"])
+```
+
+# Graphique
+```{r plot, message=FALSE, warning=FALSE}
+library("gplots")
+barplot2(c(mean(data[,"naturel"]), mean(data[,"abstrait"])), names.arg = c("naturel", "abstrait"), plot.grid = TRUE, ylab = "Temps (ms)", xlab = "Type d'icone")
+```
+
+# RÃ©-arrangement des donnÃ©es
+But: fusionner les colonnes *naturel* et *abstrait* pour crÃ©er une colonne temps et ajouter une colonne *type*.
+
+```{r onecol, results="hide"}
+d1 <- data[c("participant","naturel")]
+d1["type"] = "naturel"
+colnames(d1)[2] <- "temps"
+d2 <- data[c("participant","abstrait")]
+d2["type"] = "abstrait"
+colnames(d2)[2] <- "temps"
+d3 <- rbind(d1,d2)
+d3 <- d3[,c(1,3,2)]
+```
+
+```{r showdata2, echo = FALSE, results = 'asis'}
+kable(d3)
+```
+
+## ANOVA
+###Test de la normalitÃ© des donnÃ©es
+
+```{r normdonnees}
+shapiro.test(data[,"naturel"])
+shapiro.test(data[,"abstrait"])
+```
+
+p>0.05 donc donnÃ©es considÃ©rÃ©es comme suivant une distribution normale
+
+###Test d'homogÃ©nÃ©itÃ© des variances
+```{r leven}
+library(car)
+d3$type = factor(d3$type)
+kable(leveneTest(temps ~ type, data=d3))
+```
+
+p>0.05 donc les variances des 2 groupes ne sont pas statistiquement diffÃ©rentes donc tout va bien.
+
+Conversion des donnÃ©es au format long (nÃ©cessaire pour ANOVA)
+```{r convertlong, results="hide"}
+library("reshape")
+data.long = melt(d3, id = c("participant","type","temps"))
+```
+
+On prÃ©cise les variables indÃ©pendantes (facteurs)
+```{r indepvar, results="hide"}
+data.long$type = factor(data.long$type)
+```
+
+###ANOVA
+```{r anova}
+library("ez")
+kable(ezPrecis(data.long))
+kable(ezStats(data.long, dv=.(temps), wid=.(participant), within=.(type), type=3))
+kable(ezANOVA(data.long, dv=.(temps), wid=.(participant), within=.(type), type=3))
+```
+
+Calcul des intervalles de confiance Ã  95%
+
+```{r means}
+library(lsr)
+aggregate( temps~type, data.long, ciMean )
+```
+
+Analyse post-hoc avec ajustement de Bonferroni
+```{r posthoc}
+attach(data.long)
+print(pairwise.t.test(temps, interaction(type), p.adj = "bonferroni"))
+detach(data.long)
+```
+
+## Graphique avec intervalles de confiance
+
+```{r plotci}
+ci_naturel = ciMean(data[,"naturel"])
+ci_abstrait = ciMean(data[,"abstrait"])
+ci_lower = c(ci_naturel[1], ci_abstrait[1])
+ci_upper = c(ci_naturel[2], ci_abstrait[2])
+barplot2(c(mean(data[,"naturel"]), mean(data[,"abstrait"])), names.arg = c("naturel", "abstrait"), plot.grid = TRUE, plot.ci = TRUE, ci.l = ci_lower, ci.u = ci_upper , ylab = "Temps (ms)", xlab = "Type d'icone")
+```
+
+## Test effet de l'ordre de passage
+
+```{r readdata2}
+data = read.table("icones.csv", header=TRUE, sep=",")
+```
+
+```{r onecol2, results="hide"}
+d1 <- data[c("participant","naturel","groupe")]
+d1["type"] = "naturel"
+colnames(d1)[2] <- "temps"
+d2 <- data[c("participant","abstrait","groupe")]
+d2["type"] = "abstrait"
+colnames(d2)[2] <- "temps"
+d3 <- rbind(d1,d2)
+d3 <- d3[,c(1,3,2,4)]
+```
+
+Conversion des donnÃ©es au format long
+```{r convertlong2, results="hide"}
+library("reshape2")
+data.long = melt(d3, id = c("participant","groupe","type","temps"))
+```
+
+On prÃ©cise les variables indÃ©pendantes (facteurs)
+```{r indepvar2, results="hide"}
+data.long$type = factor(data.long$type)
+data.long$groupe = factor(data.long$groupe)
+```
+
+```{r anova2}
+library("ez")
+kable(ezPrecis(data.long))
+kable(ezStats(data.long, dv=.(temps), wid=.(participant), within=.(type), between=.(groupe), type=3))
+kable(ezANOVA(data.long, dv=.(temps), wid=.(participant), within=.(type), between=.(groupe), type=3))
+```

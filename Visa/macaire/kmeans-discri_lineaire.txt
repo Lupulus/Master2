@@ -1,5 +1,10 @@
 macro "kmeans-discri_lineaire" {
 
+Dialog.create("Choix");
+Dialog.addChoice("Type:", newArray("RGB", "HSB"));
+Dialog.show();
+
+choix = Dialog.getChoice();
 
 open("images_2016/cas_3_dalton15.bmp");
 
@@ -7,12 +12,16 @@ run("k-means Clustering ...", "number_of_clusters=4 cluster_center_tolerance=0.0
 
 setBatchMode(true);
 
+
+if(choix == "HSB")
+	run("Color Space Converter", "from=RGB to=HSB white=D65");
+
 image_cluster = getImageID();
 W = getWidth();
 H = getHeight();
 selectImage(image_cluster);
 clusters = newArray(0,0,0,0) ;
-n_clusters = 0
+n_clusters = 0;
 
 for (j = 0; j < H; j++) {
 	for (i = 0; i < W; i++) {
@@ -31,10 +40,10 @@ for (j = 0; j < H; j++) {
 	}
 }
 
+
 open();
 
 segmenter = getImageID();
-value = 0;
 selectImage (segmenter);
 
 for(j = 0; j < H; j++){
@@ -45,9 +54,9 @@ for(j = 0; j < H; j++){
 		Gp = (p & 0x00ff00) >> 8;
 		Bp = (p & 0x0000ff) ;
 		for(k = 0; k < 4; k++){
-			Rk = (k & 0xff0000) >> 16;
-			Gk = (k & 0x00ff00) >> 8;
-			Bk = (k & 0x0000ff) ;
+			Rk = (clusters[k] & 0xff0000) >> 16;
+			Gk = (clusters[k] & 0x00ff00) >> 8;
+			Bk = (clusters[k] & 0x0000ff) ;
 			Rs = pow(Rp - Rk, 2);
 			Gs = pow(Gp - Gk, 2);
 			Bs = pow(Bp - Bk, 2);
