@@ -70,9 +70,9 @@ public class Surface : MonoBehaviour {
 	public Vector3 PointSurface(double u,double v) {
 		Vector3 result=Vector3.zero;
 		float w=0.0f;
-		/* TODO : set result */
+        /* TODO : set result */
 
-		return result; // * 1.0f / (float)w;
+        return result; // * 1.0f / (float)w;
 	}
 
 	// Update is called once per frame
