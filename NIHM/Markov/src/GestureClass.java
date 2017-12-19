@@ -125,10 +125,9 @@ public class GestureClass {
 		for (Double i : featuresRawPoints) {
 			obs.add(new ObservationInteger(i.intValue()));
 		}
-		//ForwardBackwardCalculator tmp = new ForwardBackwardCalculator(obs, hmm);
+		ForwardBackwardCalculator fbc = new ForwardBackwardCalculator(obs, hmm);
 				
-		//return tmp.probability();
-		return res;
+		return fbc.probability();
 	}	
 	
 }	

@@ -44,7 +44,7 @@ public class HMM {
 		classMap = new HashMap<String, GestureClass>();
 		templateManager = new TemplateManager("ressources/gestures.xml");
 		gesturesProbabilities = new Vector<GestureProbability>();
-		//Training();
+		Training();
 	}
 	
 	/**
@@ -205,8 +205,14 @@ public class HMM {
 	 */
 	
 	public ArrayList<Double> computeFeatures(Vector<Point2D> points) {
-		
-		return null;
+		int a, o;
+		ArrayList<Double> res = new ArrayList<Double>();
+		for(int i = 0; i < points.size() - 1; i++){
+			o = (int) Math.abs(points.get(i).getY() - points.get(i + 1).getY());
+			a = (int) Math.abs(points.get(i).getX() - points.get(i + 1).getX());
+			res.add((double) Math.round((Math.atan2(o, a))/10 ));
+		}
+		return res;
 	}
 	
 
@@ -258,7 +264,27 @@ public class HMM {
 	
 	protected Vector<Point2D> resample(Vector<PointData> pts, int deltaTms) {
 		Vector<Point2D> res = new Vector<Point2D>();
+		res.add(pts.get(0).getPoint());
+		double time;
+		double debut = pts.get(0).getTimeStamp();
+		debut += deltaTms;
+		
+		for(int i = 1; i < pts.size() - 1; i++) {
+			double fin = pts.get(i + 1).getTimeStamp();
+			if(fin > debut){
+				time = pts.get(i).getTimeStamp();
+				double x1 = pts.get(i).getX();
+				double x2 = pts.get(i + 1).getX();
+				double y1 = pts.get(i).getY();
+				double y2 = pts.get(i + 1).getY();
 
+				double x = (x2-x1) / (fin - time) * (debut - time) + x1;
+				double y = (y2-y1) / (fin - time) * (debut - time) + y1;
+				res.add(new Point2D(x, y));
+				
+				debut += deltaTms;
+			}
+		}	
 		return res;
 	}
 	

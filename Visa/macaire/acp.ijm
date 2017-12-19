@@ -1,12 +1,13 @@
 macro "acp"{
 
 //on récupère l'image de test
-open("images_2016/cas_1_dalton42.bmp");
+open();
+title = getTitle();
 //séparation de l'image en rouge, vert et bleu puis on les stack
 run("Split Channels");
-selectWindow("cas_1_dalton42.bmp (blue)");
-selectWindow("cas_1_dalton42.bmp (green)");
-selectWindow("cas_1_dalton42.bmp (red)");
+selectWindow(title + " (blue)");
+selectWindow(title + " (green)");
+selectWindow(title + " (red)");
 run("Images to Stack", "name=RGB1 title=[] use");
 //une fois stacké, on lance PCA dessus puis on passe la stack obtenue en 8 bit et enfin on repasse en RGB
 run("PCA ");
@@ -42,12 +43,15 @@ for (j = 0; j < H; j++) {
 open();
 
 segmenter = getImageID();
-selectImage (segmenter);
+title = getTitle();
+selectWindow(title);
 run("Split Channels");
-selectImage(getImageID());
+selectWindow(title + " (blue)");
+selectWindow(title + " (green)");
+selectWindow(title + " (red)");
 run("Images to Stack", "name=RGB2 title=[] use");
 run("PCA ");
-selectWindow("PCA of RGB1");
+selectWindow("PCA of RGB2");
 run("8-bit");
 run("Stack to RGB");
 

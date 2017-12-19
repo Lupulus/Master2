@@ -205,12 +205,11 @@ public class HMM {
 	 */
 	
 	public ArrayList<Double> computeFeatures(Vector<Point2D> points) {
-		int a, o;
 		ArrayList<Double> res = new ArrayList<Double>();
 		for(int i = 0; i < points.size() - 1; i++){
-			o = (int) Math.abs(points.get(i).getY() - points.get(i + 1).getY());
-			a = (int) Math.abs(points.get(i).getX() - points.get(i + 1).getX());
-			res.add((double) Math.round((Math.atan2(o, a))/10 ));
+			double o = Math.abs(points.get(i + 1).getY() - points.get(i).getY());
+			double a = points.get(i + 1).getX() - points.get(i).getX();
+			res.add((double) Math.round(Math.atan2(o, a) / Math.PI * 18 ));
 		}
 		return res;
 	}
@@ -254,7 +253,7 @@ public class HMM {
 	public double squareDistance (Point2D p0, Point2D p1) {
 		return (p1.getX() - p0.getX()) * (p1.getX() - p0.getX()) + (p1.getY() - p0.getY()) * (p1.getY() - p0.getY());
 	}		
-
+	
 	/**
 	 * Resample points to have one point each deltaTms ms
 	 * @param p0
@@ -265,26 +264,27 @@ public class HMM {
 	protected Vector<Point2D> resample(Vector<PointData> pts, int deltaTms) {
 		Vector<Point2D> res = new Vector<Point2D>();
 		res.add(pts.get(0).getPoint());
-		double time;
-		double debut = pts.get(0).getTimeStamp();
-		debut += deltaTms;
 		
-		for(int i = 1; i < pts.size() - 1; i++) {
-			double fin = pts.get(i + 1).getTimeStamp();
-			if(fin > debut){
-				time = pts.get(i).getTimeStamp();
-				double x1 = pts.get(i).getX();
-				double x2 = pts.get(i + 1).getX();
-				double y1 = pts.get(i).getY();
-				double y2 = pts.get(i + 1).getY();
+		double time = pts.get(0).getTimeStamp();
+		for(int i = 1; i < pts.size();) {
+			double debut = pts.get(i - 1).getTimeStamp();
+			double fin = pts.get(i).getTimeStamp();
+			
+			if(fin >= time){
+				double x1 = pts.get(i - 1).getX();
+				double x2 = pts.get(i).getX();
+				double y1 = pts.get(i - 1).getY();
+				double y2 = pts.get(i).getY();
 
-				double x = (x2-x1) / (fin - time) * (debut - time) + x1;
-				double y = (y2-y1) / (fin - time) * (debut - time) + y1;
+				double x = (x2 - x1) / (fin - debut) * (time - debut) + x1;
+				double y = (y2 - y1) / (fin - debut) * (time - debut) + y1;
 				res.add(new Point2D(x, y));
 				
-				debut += deltaTms;
+				time += deltaTms;
+			} else {
+				i++;
 			}
-		}	
+		}
 		return res;
 	}
 	
