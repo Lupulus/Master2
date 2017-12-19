@@ -1,0 +1,92 @@
+import ij.*;
+import ij.plugin.filter.*;
+import ij.process.*;
+import ij.gui.*;
+
+public class sample_cfa implements PlugInFilter {
+
+	ImagePlus imp;	// Fenêtre contenant l'image de référence
+	int width;		// Largeur de la fenêtre
+	int height;		// Hauteur de la fenêtre
+
+	public int setup(String arg, ImagePlus imp) {
+		this.imp = imp;
+		return PlugInFilter.DOES_RGB;
+	}
+
+
+	public void run(ImageProcessor ip) {
+
+		// Lecture des dimensions de la fenêtre
+		width = imp.getWidth();
+		height = imp.getHeight();
+
+
+		// Calcul des échantillons de chaque composante de l'image CFA
+		ImageStack samples_stack = imp.createEmptyStack();
+		samples_stack.addSlice("rouge", cfa_samples(ip,0));	// Composante R
+		samples_stack.addSlice("vert", cfa_samples(ip,1));// Composante G
+		samples_stack.addSlice("bleu", cfa_samples(ip,2));	// Composante B
+
+		// Création de l'image résultat
+		ImagePlus cfa_samples_imp = imp.createImagePlus();
+		cfa_samples_imp.setStack("Échantillons couleur CFA", samples_stack);
+
+
+		// Génération de l'image CFA
+		ImageProcessor imgCfa = cfa_samples(ip, 0);
+
+		ImagePlus imageResult = new ImagePlus("Image CFA", imgCfa);
+		imageResult.show();
+	}
+
+	ImageProcessor cfa_samples(ImageProcessor cfa_ip, int k) {
+
+		// Image couleur de référence et ses dimensions
+		ImageProcessor ip = imp.getProcessor();
+		width = imp.getWidth();
+		height = imp.getHeight();
+
+		int pixel_value = 0;	// Valeur du pixel source
+		ImageProcessor res = new ByteProcessor(width,height);
+
+
+		if (k == 1) {
+			// Échantillons G
+			for (int y=0; y<height; y+=2) {
+				for (int x=0; x<width; x+=2) {
+					pixel_value = ip.getPixel(x,y);
+					int green = (int)(pixel_value & 0x00ff00)>>8;
+				res.putPixel(x,y,green);
+				}
+			}
+			for (int y=1; y<height; y+=2) {
+				for (int x=1; x<width; x+=2) {
+					pixel_value = ip.getPixel(x,y);
+					int green = (int)(pixel_value & 0x00ff00)>>8;
+				res.putPixel(x,y,green);
+				}
+			}
+		} else if (k == 0) {
+			// Échantillons R
+			for (int y=0; y<height; y+=2) {
+				for (int x=1; x<width; x+=2) {
+					pixel_value = ip.getPixel(x,y);
+					int red = (int)(pixel_value & 0xff0000)>>16;
+				res.putPixel(x,y,red);
+				}
+			}
+		} else if (k == 2) {
+			// Échantillons B
+			for (int y=1; y<height; y+=2) {
+				for (int x=0; x<width; x+=2) {
+					pixel_value = ip.getPixel(x,y);
+					int blue = (int)(pixel_value & 0x0000ff);
+					res.putPixel(x,y,blue);
+				}
+			}
+		}
+
+		return res;
+	}
+}
