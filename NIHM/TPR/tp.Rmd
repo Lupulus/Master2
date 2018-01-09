@@ -49,7 +49,7 @@ participants = unique(data$Participant)
     tempParticipants[t] = tempParticipants[t] / length(participants)
   }
   barplot2(tempParticipants, plot.ci = TRUE, 
-         ci.l = lower, ci.u = upper,col = 2:3)
+         ci.l = 0, ci.u = 95,col = 2:3)
 ```
 
 
