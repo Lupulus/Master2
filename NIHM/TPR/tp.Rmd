@@ -30,14 +30,21 @@ participants = unique(data$Participant)
 ```
 
 ```{r tempsMoyenToutesConditions}
+  data = read.table("data.txt", header=TRUE, sep=",")
+  techniques=unique(data$Technique)
+  participants = unique(data$Participant)
+
   tempParticipants = c(1:length(techniques));
   for(t in 1:length(techniques)){
     technique <- techniques[t]
     for(p in 1:length(participants)){
       participant2SurfPad=subset(data,Participant == p & Technique == technique)
-      tmp <- mean(participant2SurfPad[,"Time"])
-      tempParticipants[t] = tempParticipants[t] + tmp
-    }
+      isErr <- mean(participant2SurfPad[,"Err"])
+      if(isErr == 0){
+        tmp <- mean(participant2SurfPad[,"Time"])
+        tempParticipants[t] = tempParticipants[t] + tmp
+      }    
+  }
     tempParticipants[t] = tempParticipants[t] / length(participants)
   }
   barplot2(tempParticipants)
