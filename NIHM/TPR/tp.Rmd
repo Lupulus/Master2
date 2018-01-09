@@ -30,6 +30,7 @@ participants = unique(data$Participant)
 ```
 
 ```{r tempsMoyenToutesConditions}
+  library(gplots)
   data = read.table("data.txt", header=TRUE, sep=",")
   techniques=unique(data$Technique)
   participants = unique(data$Participant)
@@ -47,7 +48,8 @@ participants = unique(data$Participant)
   }
     tempParticipants[t] = tempParticipants[t] / length(participants)
   }
-  barplot2(tempParticipants)
+  barplot2(tempParticipants, plot.ci = TRUE, 
+         ci.l = lower, ci.u = upper,col = 2:3)
 ```
 
 
