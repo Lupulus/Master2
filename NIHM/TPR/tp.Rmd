@@ -6,7 +6,10 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
+install.packages("gplots")
 library("gplots")
+install.packages("gmodels")
+library(gmodels)
 ```
 
 ```{r readdata}
@@ -31,25 +34,34 @@ participants = unique(data$Participant)
 
 ```{r tempsMoyenToutesConditions}
   library(gplots)
+  library(gmodels)
   data = read.table("data.txt", header=TRUE, sep=",")
   techniques=unique(data$Technique)
   participants = unique(data$Participant)
 
   tempParticipants = c(1:length(techniques));
-  for(t in 1:length(techniques)){
-    technique <- techniques[t]
-    for(p in 1:length(participants)){
-      participant2SurfPad=subset(data,Participant == p & Technique == technique)
-      isErr <- mean(participant2SurfPad[,"Err"])
-      if(isErr == 0){
-        tmp <- mean(participant2SurfPad[,"Time"])
-        tempParticipants[t] = tempParticipants[t] + tmp
-      }    
+  
+  tempsMoyen= function(){
+    
   }
-    tempParticipants[t] = tempParticipants[t] / length(participants)
-  }
+  
+    for(t in 1:length(techniques)){
+      technique <- techniques[t]
+      for(p in 1:length(participants)){
+        participant2SurfPad=subset(data,Participant == p & Technique == technique)
+        isErr <- mean(participant2SurfPad[,"Err"])
+        if(isErr == 0){
+          tmp <- mean(participant2SurfPad[,"Time"])
+          tempParticipants[t] = tempParticipants[t] + tmp
+        }    
+    }
+      tempParticipants[t] = tempParticipants[t] / length(participants)
+    }
+  
+  #tempsParticipants = sapply(techniques, tempsMoyen)
+  cis = ci(tempParticipants, confidence=0.95)
   barplot2(tempParticipants, plot.ci = TRUE, 
-         ci.l = 0, ci.u = 95,col = 2:3)
+         ci.l = cis[2], ci.u = cis[3],col = 2:3)
 ```
 
 
